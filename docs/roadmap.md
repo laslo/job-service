@@ -28,11 +28,11 @@ Use this file to track day-by-day progress. Locked stack: [reference/tech-stack.
 
 ## Stage 4 — Kafka: topics, produce, consume skeleton
 
-- [ ] Kafka runs locally (compose or k8s) with documented bootstrap URL.
-- [ ] Topics (and partitions strategy) defined as code or infra-as-code, not only manual UI steps.
-- [ ] Job service produces a message when a job is created (payload links to job id).
-- [ ] Standalone consumer (or worker stub) logs received messages and commits offsets safely.
-- [ ] Document how to **turn Kafka off** for earlier stages if you keep a feature flag (optional but aligned with priorities).
+- [x] Kafka runs locally (compose or k8s) with documented bootstrap URL.
+- [x] Topics (and partitions strategy) defined as code or infra-as-code, not only manual UI steps.
+- [x] Job service produces a message when a job is created (payload links to job id).
+- [x] Standalone consumer (or worker stub) logs received messages and commits offsets safely.
+- [x] Document how to **turn Kafka off** for earlier stages if you keep a feature flag (optional but aligned with priorities).
 
 ## Stage 5 — First worker: CPU-bound path (e.g. PDF or stub processor)
 

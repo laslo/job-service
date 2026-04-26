@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { JobRow } from "@job-service/db";
 
+import type { JobEventsPublisher } from "../kafka/job-events.publisher.js";
 import { JobsService, toDto } from "./jobs.service.js";
 import type { JobsRepository } from "./jobs.repository.js";
 
@@ -26,13 +27,20 @@ function makeRepo(): JobsRepository {
   } as unknown as JobsRepository;
 }
 
+function makeEvents(): JobEventsPublisher {
+  return {
+    publishJobCreated: vi.fn().mockResolvedValue(undefined),
+  } as unknown as JobEventsPublisher;
+}
+
 describe("JobsService.create", () => {
   it("persists the input as a pending job and returns the DTO", async () => {
     const repo = makeRepo();
+    const events = makeEvents();
     const row = makeRow();
     vi.mocked(repo.create).mockResolvedValueOnce(row);
 
-    const service = new JobsService(repo);
+    const service = new JobsService(repo, events);
     const result = await service.create({ type: "pdf.render", payload: { a: 1 } });
 
     expect(repo.create).toHaveBeenCalledWith({ type: "pdf.render", payload: { a: 1 } });
@@ -46,11 +54,35 @@ describe("JobsService.create", () => {
     });
   });
 
+  it("publishes a jobs.created event after the row is persisted", async () => {
+    const repo = makeRepo();
+    const events = makeEvents();
+    const row = makeRow();
+    vi.mocked(repo.create).mockResolvedValueOnce(row);
+
+    const service = new JobsService(repo, events);
+    const result = await service.create({ type: "pdf.render" });
+
+    expect(events.publishJobCreated).toHaveBeenCalledTimes(1);
+    expect(events.publishJobCreated).toHaveBeenCalledWith(result);
+  });
+
+  it("propagates publisher failures (loud-by-default contract)", async () => {
+    const repo = makeRepo();
+    const events = makeEvents();
+    vi.mocked(repo.create).mockResolvedValueOnce(makeRow());
+    vi.mocked(events.publishJobCreated).mockRejectedValueOnce(new Error("broker down"));
+
+    const service = new JobsService(repo, events);
+    await expect(service.create({ type: "pdf.render" })).rejects.toThrow("broker down");
+  });
+
   it("defaults a missing payload to an empty object before persisting", async () => {
     const repo = makeRepo();
+    const events = makeEvents();
     vi.mocked(repo.create).mockResolvedValueOnce(makeRow({ payload: {} }));
 
-    const service = new JobsService(repo);
+    const service = new JobsService(repo, events);
     await service.create({ type: "pdf.render" });
 
     expect(repo.create).toHaveBeenCalledWith({ type: "pdf.render", payload: {} });
@@ -60,10 +92,11 @@ describe("JobsService.create", () => {
 describe("JobsService.findById", () => {
   it("returns the DTO when the row exists", async () => {
     const repo = makeRepo();
+    const events = makeEvents();
     const row = makeRow({ status: "running" });
     vi.mocked(repo.findById).mockResolvedValueOnce(row);
 
-    const service = new JobsService(repo);
+    const service = new JobsService(repo, events);
     const result = await service.findById(row.id);
 
     expect(result.status).toBe("running");
@@ -72,9 +105,10 @@ describe("JobsService.findById", () => {
 
   it("throws a NotFoundException with the documented error code", async () => {
     const repo = makeRepo();
+    const events = makeEvents();
     vi.mocked(repo.findById).mockResolvedValueOnce(null);
 
-    const service = new JobsService(repo);
+    const service = new JobsService(repo, events);
     await expect(service.findById("missing-id")).rejects.toMatchObject({
       constructor: NotFoundException,
       response: { error: "job_not_found" },

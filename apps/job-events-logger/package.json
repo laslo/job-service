@@ -1,0 +1,21 @@
+{
+  "name": "@job-service/job-events-logger",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Standalone Kafka consumer stub: logs jobs.* events and commits offsets after each handled message (Stage 4).",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "tsx --env-file-if-exists=../../.env src/main.ts",
+    "dev": "tsx watch --env-file-if-exists=../../.env src/main.ts",
+    "typecheck": "tsc -b --pretty"
+  },
+  "dependencies": {
+    "@job-service/kafka": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "tsx": "^4.21.0"
+  }
+}

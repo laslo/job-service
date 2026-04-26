@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/healthz": {
+    "/health": {
       "get": {
         "operationId": "liveness",
         "parameters": [],
@@ -14,7 +14,7 @@
         "tags": ["health"]
       }
     },
-    "/readyz": {
+    "/ready": {
       "get": {
         "description": "Returns 200 once the database accepts queries; 503 otherwise.",
         "operationId": "readiness",

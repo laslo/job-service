@@ -1,5 +1,12 @@
-# Local development stack (Stage 2: PostgreSQL only).
-# Brought up by `pnpm db:up`; later stages add Kafka and other services here.
+# Local development stack.
+#
+# Stage 2: PostgreSQL.
+# Stage 4: Apache Kafka (KRaft, single broker).
+#
+# Brought up by `pnpm db:up` and `pnpm kafka:up`. Each service is opt-in so
+# earlier stages stay fast (see `docs/roadmap.md`). Kafka can be skipped
+# entirely by setting `KAFKA_ENABLED=false` in `.env`; the API and the
+# events logger become no-ops in that mode.
 
 name: job-service-dev
 
@@ -23,5 +30,59 @@ services:
       timeout: 3s
       retries: 20
 
+  # Single-node Kafka broker in KRaft mode (no ZooKeeper). Suitable for local
+  # development only; production uses managed Kafka or Strimzi (ADR-0001).
+  #
+  # The advertised listener resolves to `localhost:${KAFKA_PORT}` so clients
+  # running on the host (API, workers, kafkajs CLI) can connect via the mapped
+  # port without docker DNS. When workers move into containers in later stages
+  # we will add a second listener on the compose network.
+  kafka:
+    image: apache/kafka:3.9.0
+    container_name: job-service-kafka
+    restart: unless-stopped
+    ports:
+      - "${KAFKA_PORT:-9092}:9092"
+    environment:
+      # Stable UUID so the broker can re-attach to the persisted volume after
+      # a `docker compose down` / `up` cycle. Read by the official image's
+      # launch script (which expects `CLUSTER_ID`, not `KAFKA_CLUSTER_ID`).
+      CLUSTER_ID: 4L6g3nShT-eMCtK--X86sw
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      # Empty-host form (`://:port`) binds on all interfaces. Using the
+      # explicit meta-address `0.0.0.0` here makes the image's StorageTool
+      # validation reject the config (combined-mode broker + controller).
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:${KAFKA_PORT:-9092}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      # Topics are managed as code via `pnpm kafka:topics` (see packages/kafka).
+      # Disabling auto-creation surfaces typos as connection errors instead of
+      # silently spawning unconfigured single-partition topics.
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      # Persist log segments to a named volume (the image's default is /tmp,
+      # which is wiped on container recreate).
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 30s
+
 volumes:
   postgres-data:
+  kafka-data:

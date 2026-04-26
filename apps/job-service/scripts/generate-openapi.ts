@@ -28,7 +28,7 @@ const outFile = resolve(here, "..", "openapi.json");
 async function main(): Promise<void> {
   const app = await NestFactory.create(AppModule, { logger: false });
   try {
-    app.setGlobalPrefix("v1", { exclude: ["healthz", "readyz"] });
+    app.setGlobalPrefix("v1", { exclude: ["health", "ready"] });
 
     const config = new DocumentBuilder()
       .setTitle("Job Service API")

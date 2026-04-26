@@ -1,0 +1,49 @@
+---
+description: Sync Postman "Job Service API" collection when apps/job-service/openapi.json changes
+globs: apps/job-service/openapi.json
+alwaysApply: false
+---
+
+# Postman ↔ OpenAPI sync
+
+The Postman collection **Job Service API** is generated from a Postman Spec linked to `apps/job-service/openapi.json`. After any change to this file, sync Postman via the `user-postman` MCP server. Per ADR-0004, the OpenAPI artifact is the contract source-of-truth.
+
+## IDs
+
+- Workspace: `020a32f0-cb2c-412e-83b6-8d7d317e12c7` (My Workspace)
+- Spec: `9cf630fe-344d-4e40-864c-871e1d1c8088`
+- Spec root file path: `openapi.json`
+- Collection UID: `160639-3397ee34-c11b-44c8-92f4-be511a9f64e5`
+
+## Sync steps after editing `apps/job-service/openapi.json`
+
+1. Push the new content to the spec:
+   - Tool: `updateSpecFile`
+   - Args: `{ specId, filePath: "openapi.json", content: <stringified file contents> }`
+2. Sync the collection from the spec:
+   - Tool: `syncCollectionWithSpec`
+   - Args: `{ specId, collectionUid }`  (returns a `taskId`)
+3. Poll `getAsyncSpecTaskStatus` with `elementType: "collections"`, `elementId: <collectionUid>`, `taskId` until `status: "completed"`. (The task lives under the collection, not the spec — `elementType: "specs"` returns 404 here.)
+4. Confirm with `getSpecCollections` (`elementType: "collection"`) that `state: "in-sync"`.
+5. **Prune orphans** (mandatory — see below). Briefly report the final clean state to the user.
+
+## Orphan pruning — required after every sync
+
+`syncCollectionWithSpec` is **additive**: it adds requests for new spec operations and updates matching ones, but it never removes a request whose `(method, path)` no longer appears in the spec. Renaming a route (e.g. `/healthz` → `/health`) or changing a verb therefore leaves the old request behind as a duplicate. After every sync:
+
+1. Call `getCollection` for the collection UID and walk every request in every folder.
+2. Build the set of `(method.toUpperCase(), path)` pairs from the just-pushed `apps/job-service/openapi.json`. The collection's path is read from each request's `url` field with the `{{baseUrl}}` prefix stripped (e.g. `{{baseUrl}}/healthz` → `/healthz`).
+3. For each collection request whose `(method, path)` is **not** in the spec set, call `deleteCollectionRequest` with that request's UID.
+4. Re-fetch `getCollection` and confirm the request count matches the spec's operation count exactly.
+
+This step is fast (one `getCollection` + N deletes) and makes the sync idempotent even across path/verb renames.
+
+## When NestJS controllers/DTOs under `apps/job-service/src/` change
+
+The OpenAPI artifact is generated, not handwritten. See `openapi-sync.mdc` for **when** to regenerate it (deferred to end-of-task / stage completion / on user request). Once `apps/job-service/openapi.json` actually changes on disk, the four sync steps above apply via this rule's `globs`.
+
+## Don't
+
+- Don't hand-edit the Postman collection in the UI — manual edits are overwritten on the next sync.
+- Don't skip the `updateSpecFile` step. `syncCollectionWithSpec` reads from the spec, not from the local file.
+- Don't change the workspace/spec/collection IDs above without updating this rule.

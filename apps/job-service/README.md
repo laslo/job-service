@@ -1,6 +1,6 @@
 # `@job-service/api`
 
-NestJS HTTP service that creates and reads jobs against the `@job-service/db` package. Stage 3 of [the roadmap](../../docs/roadmap.md); kept intentionally thin so Stage 4 can layer Kafka producers on top without reshaping the controller surface.
+NestJS HTTP service that creates and reads jobs against the `@job-service/db` package and emits a `jobs.created` event to Kafka after each successful create. Stages 3–4 of [the roadmap](../../docs/roadmap.md); the controller surface is unchanged from Stage 3 — Kafka was added behind a feature flag (`KAFKA_ENABLED`).
 
 ---
 
@@ -10,8 +10,8 @@ NestJS HTTP service that creates and reads jobs against the `@job-service/db` pa
 | ------ | -------------------- | ------------------------------------------------------- |
 | `POST` | `/v1/jobs`           | Create a job row in `pending` state.                    |
 | `GET`  | `/v1/jobs/:id`       | Fetch the persisted job (id is a UUID v4).              |
-| `GET`  | `/healthz`           | Liveness probe (always 200 if the process is up).       |
-| `GET`  | `/readyz`            | Readiness probe (200 once Postgres answers `SELECT 1`). |
+| `GET`  | `/health`            | Liveness probe (always 200 if the process is up).       |
+| `GET`  | `/ready`             | Readiness probe (200 once Postgres answers `SELECT 1`). |
 | `GET`  | `/docs`              | Swagger UI (browser-testable surface).                  |
 | `GET`  | `/docs/openapi.json` | Raw OpenAPI document.                                   |
 
@@ -85,10 +85,11 @@ src/
 ├── env.ts                 # JOB_SERVICE_HOST / JOB_SERVICE_PORT parsing
 ├── common/                # validation pipe, error filter, error codes
 ├── db/                    # Drizzle client wrapper (Nest-managed lifecycle)
-├── health/                # /healthz + /readyz
+├── health/                # /health + /ready
+├── kafka/                 # Producer wrapper + JobEventsPublisher (Stage 4)
 └── jobs/
     ├── jobs.controller.ts # HTTP surface
-    ├── jobs.service.ts    # business rules (NotFound mapping, payload defaults)
+    ├── jobs.service.ts    # business rules + jobs.created publish-after-commit
     ├── jobs.repository.ts # Drizzle queries against the `jobs` table
     └── dto/               # CreateJobDto, JobDto, ApiErrorDto (OpenAPI source-of-truth)
 ```
@@ -97,6 +98,8 @@ Tests live next to the file they cover (`*.test.ts`) and run via the workspace-w
 
 ---
 
-## Stage 4 hooks
+## Kafka integration (Stage 4)
 
-When Kafka lands, `JobsService.create` is the natural place to publish a domain event after the row is inserted (same transaction boundary, with outbox or transactional-outbox-lite pattern as decided in the Kafka stage). The HTTP surface should stay unchanged.
+`JobsService.create` publishes a `jobs.created` event to Kafka **after** the Postgres row is committed. The publish is synchronous from the caller's perspective — broker errors propagate as 500s so an outage cannot silently drop events. A future stage will move this to a transactional outbox.
+
+When `KAFKA_ENABLED=false`, the publisher is a no-op and the API works against Postgres alone (useful for Stage 1–3 dev loops). The topic name and event schema are owned by [`@job-service/kafka`](../../packages/kafka).

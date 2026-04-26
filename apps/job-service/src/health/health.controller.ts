@@ -9,14 +9,14 @@ import { JobServiceDbClient } from "../db/db.client.js";
 export class HealthController {
   constructor(private readonly db: JobServiceDbClient) {}
 
-  @Get("healthz")
+  @Get("health")
   @ApiOperation({ operationId: "liveness", summary: "Liveness probe" })
   @ApiResponse({ status: 200 })
   liveness(): { status: "ok" } {
     return { status: "ok" };
   }
 
-  @Get("readyz")
+  @Get("ready")
   @ApiOperation({
     operationId: "readiness",
     summary: "Readiness probe",

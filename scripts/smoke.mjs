@@ -15,9 +15,12 @@ const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const expectedDirs = [
   "apps",
   "apps/job-service",
+  "apps/job-events-logger",
   "packages",
   "packages/db",
+  "packages/kafka",
   "infra",
+  "infra/kafka",
   "infra/kubernetes",
   "infra/helm",
   "infra/observability",
@@ -28,6 +31,7 @@ const expectedFiles = [
   ".env.example",
   "infra/docker-compose.dev.yml",
   "apps/job-service/openapi.json",
+  "packages/kafka/src/topics.ts",
 ];
 
 const layout = expectedDirs.map((rel) => {
@@ -53,7 +57,7 @@ const lines = [
   ...layout.map((l) => `  ${l.ok ? "ok " : "MISS"} ${l.path}/`),
   ...files.map((f) => `  ${f.ok ? "ok " : "MISS"} ${f.path}`),
   "",
-  "Next: see docs/roadmap.md (Stage 4 — Kafka).",
+  "Next: see docs/roadmap.md (Stage 5 — first worker).",
 ];
 
 process.stdout.write(lines.join("\n") + "\n");

@@ -18,7 +18,7 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.setGlobalPrefix(API_PREFIX, {
-    exclude: ["healthz", "readyz"],
+    exclude: ["health", "ready"],
   });
   app.useGlobalPipes(buildValidationPipe());
   app.useGlobalFilters(new GlobalExceptionFilter());

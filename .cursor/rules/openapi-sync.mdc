@@ -1,0 +1,46 @@
+---
+description: When and how to regenerate apps/job-service/openapi.json from NestJS sources
+globs: apps/job-service/src/**/*.ts, apps/job-service/scripts/generate-openapi.ts
+alwaysApply: false
+---
+
+# OpenAPI regeneration policy
+
+`apps/job-service/openapi.json` is a **derived artifact**, produced from NestJS controllers, DTOs, and Swagger decorators (`@ApiProperty`, `@ApiOperation`, `@ApiResponse`, `@ApiTags`, route methods, `class-validator` constraints) by `apps/job-service/scripts/generate-openapi.ts`. Per ADR-0004 the JSON file is the checked-in contract; the decorators are the source-of-truth.
+
+## Regenerate **only when the change set is stable**
+
+Do **not** regenerate after every controller/DTO tweak inside an iteration. Regenerate once, at the end of the work stream, when at least one of these holds:
+
+- The user signals completion (e.g. "commit", "push", "done", "ready", "wrap up", "finish stage N").
+- A todo or roadmap stage is being marked done.
+- You are about to hand the change off (PR description, manual test instructions, demo).
+- The user explicitly asks to update the spec or sync Postman.
+
+Reason: every regeneration produces a noisy JSON diff and triggers a downstream Postman sync — batching keeps reviews and Postman state clean.
+
+## What counts as an OpenAPI-affecting change
+
+Touching any of these inside `apps/job-service/` may shift the spec, so the deferred regeneration becomes mandatory before the change set lands:
+
+- Controllers — route paths, HTTP verbs, `@Controller`, `setGlobalPrefix` / `exclude`.
+- DTOs or any class with `@ApiProperty`, `class-validator`, or `class-transformer` decorators.
+- Module wiring that adds or removes a controller from the application graph.
+- `DocumentBuilder` configuration in `src/main.ts` and `scripts/generate-openapi.ts`.
+
+If a change clearly does not affect any of the above (service body, repository SQL, internal helpers, tests, README), no regeneration is required.
+
+## How to regenerate
+
+```bash
+pnpm api:openapi      # writes apps/job-service/openapi.json
+pnpm format:fix       # prettier-normalize the JSON before commit
+```
+
+Once `apps/job-service/openapi.json` is updated on disk, the steps in `postman-sync.mdc` take over and push the spec to Postman.
+
+## Don't
+
+- Don't regenerate after each save during an iterative refactor.
+- Don't hand-edit `openapi.json` — it will be overwritten.
+- Don't commit a stale `openapi.json` once the change set is stable; CI is expected to detect drift.

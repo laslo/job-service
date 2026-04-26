@@ -26,9 +26,16 @@
     "db:migrate": "pnpm --filter @job-service/db migrate",
     "db:check": "pnpm --filter @job-service/db check",
     "db:studio": "pnpm --filter @job-service/db studio",
+    "kafka:up": "docker compose -f infra/docker-compose.dev.yml --project-directory . up -d --wait kafka",
+    "kafka:down": "docker compose -f infra/docker-compose.dev.yml --project-directory . stop kafka",
+    "stack:up": "docker compose -f infra/docker-compose.dev.yml --project-directory . up -d --wait",
+    "stack:down": "docker compose -f infra/docker-compose.dev.yml --project-directory . down",
+    "kafka:topics": "pnpm --filter @job-service/kafka topics",
     "api:start": "pnpm --filter @job-service/api start",
     "api:dev": "pnpm --filter @job-service/api dev",
-    "api:openapi": "pnpm --filter @job-service/api openapi:generate"
+    "api:openapi": "pnpm --filter @job-service/api openapi:generate",
+    "worker:logger": "pnpm --filter @job-service/job-events-logger start",
+    "worker:logger:dev": "pnpm --filter @job-service/job-events-logger dev"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

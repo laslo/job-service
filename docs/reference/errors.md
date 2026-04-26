@@ -36,7 +36,7 @@ The shape is enforced by `apps/job-service/src/common/exception.filter.ts` and a
 | 400  | `bad_request`          | Generic 400 (e.g. `ParseUUIDPipe` failure on `:id`).                                                  |
 | 404  | `job_not_found`        | `GET /v1/jobs/:id` for an unknown id.                                                                 |
 | 404  | `not_found`            | Generic 404 fallback (route not registered).                                                          |
-| 503  | `service_unavailable`  | Readiness probe (`/readyz`) fails — typically Postgres unreachable. `details.cause` carries the why.  |
+| 503  | `service_unavailable`  | Readiness probe (`/ready`) fails — typically Postgres unreachable. `details.cause` carries the why.  |
 | 500  | `internal_error`       | Unhandled exception. Server logs include the stack; the response body never does.                     |
 
 Codes are listed in `apps/job-service/src/common/api-error.ts`. Add new ones there and document them in this table in the same change.

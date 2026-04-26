@@ -34,11 +34,14 @@ Choices are pinned by [ADR-0007](./docs/adr/0007-use-pnpm-workspaces-with-turbor
 ```
 .
 ├── apps/
-│   └── job-service/               # NestJS HTTP API: create + read jobs (Stage 3)
+│   ├── job-service/               # NestJS HTTP API: create + read jobs (Stage 3)
+│   └── job-events-logger/         # Kafka consumer stub: logs jobs.* events (Stage 4)
 ├── packages/
-│   └── db/                        # PostgreSQL schema, Drizzle client, migrations (Stage 2)
+│   ├── db/                        # PostgreSQL schema, Drizzle client, migrations (Stage 2)
+│   └── kafka/                     # kafkajs client, topic registry, event schemas (Stage 4)
 ├── infra/
-│   ├── docker-compose.dev.yml     # local dev stack (Postgres now; Kafka in Stage 4)
+│   ├── docker-compose.dev.yml     # local dev stack (Postgres + Kafka)
+│   ├── kafka/                     # broker README, topic operator helpers
 │   ├── kubernetes/
 │   ├── helm/
 │   └── observability/
@@ -77,25 +80,32 @@ It prints the active toolchain identity and verifies that the target folder layo
 
 ## Common scripts
 
-| Command            | Purpose                                                                |
-| ------------------ | ---------------------------------------------------------------------- |
-| `pnpm smoke`       | Print toolchain identity + verify layout.                              |
-| `pnpm lint`        | Run ESLint across the workspace.                                       |
-| `pnpm format`      | Check Prettier formatting.                                             |
-| `pnpm format:fix`  | Apply Prettier formatting.                                             |
-| `pnpm test`        | Run Vitest (passes with no tests).                                     |
-| `pnpm typecheck`   | Run TypeScript in build mode.                                          |
-| `pnpm build`       | Turborepo `build` task graph (no-op until apps land).                  |
-| `pnpm dev`         | Turborepo `dev` task graph (no-op until apps land).                    |
-| `pnpm db:up`       | Start Postgres via `infra/docker-compose.dev.yml` and wait on health.  |
-| `pnpm db:down`     | Stop the local Postgres container (volume is preserved).               |
-| `pnpm db:generate` | Regenerate Drizzle migration SQL from `packages/db/src/schema`.        |
-| `pnpm db:migrate`  | Apply pending migrations to the database in `DATABASE_URL`.            |
-| `pnpm db:check`    | Insert a job row and read it back (Stage 2 sanity check).              |
-| `pnpm db:studio`   | Open Drizzle Studio against the configured database.                   |
-| `pnpm api:start`   | Start the job service HTTP API (`apps/job-service`).                   |
-| `pnpm api:dev`     | Start the API with `--watch` for the inner dev loop.                   |
-| `pnpm api:openapi` | Regenerate `apps/job-service/openapi.json` from controller decorators. |
+| Command                  | Purpose                                                                |
+| ------------------------ | ---------------------------------------------------------------------- |
+| `pnpm smoke`             | Print toolchain identity + verify layout.                              |
+| `pnpm lint`              | Run ESLint across the workspace.                                       |
+| `pnpm format`            | Check Prettier formatting.                                             |
+| `pnpm format:fix`        | Apply Prettier formatting.                                             |
+| `pnpm test`              | Run Vitest (passes with no tests).                                     |
+| `pnpm typecheck`         | Run TypeScript in build mode.                                          |
+| `pnpm build`             | Turborepo `build` task graph (no-op until apps land).                  |
+| `pnpm dev`               | Turborepo `dev` task graph (no-op until apps land).                    |
+| `pnpm db:up`             | Start Postgres via `infra/docker-compose.dev.yml` and wait on health.  |
+| `pnpm db:down`           | Stop the local Postgres container (volume is preserved).               |
+| `pnpm db:generate`       | Regenerate Drizzle migration SQL from `packages/db/src/schema`.        |
+| `pnpm db:migrate`        | Apply pending migrations to the database in `DATABASE_URL`.            |
+| `pnpm db:check`          | Insert a job row and read it back (Stage 2 sanity check).              |
+| `pnpm db:studio`         | Open Drizzle Studio against the configured database.                   |
+| `pnpm kafka:up`          | Start the Kafka broker (KRaft) and wait on its healthcheck.            |
+| `pnpm kafka:down`        | Stop the Kafka container (volume is preserved).                        |
+| `pnpm kafka:topics`      | Converge broker topics from `packages/kafka/src/topics.ts`.            |
+| `pnpm stack:up`          | Start Postgres **and** Kafka together (compose `up --wait`).           |
+| `pnpm stack:down`        | Tear the full local stack down.                                        |
+| `pnpm api:start`         | Start the job service HTTP API (`apps/job-service`).                   |
+| `pnpm api:dev`           | Start the API with `--watch` for the inner dev loop.                   |
+| `pnpm api:openapi`       | Regenerate `apps/job-service/openapi.json` from controller decorators. |
+| `pnpm worker:logger`     | Run the standalone Kafka consumer stub (Stage 4).                      |
+| `pnpm worker:logger:dev` | Same, with `tsx watch` for the inner dev loop.                         |
 
 ---
 
@@ -145,6 +155,39 @@ Validation and not-found errors share the envelope documented in [`docs/referenc
 
 ---
 
+## Kafka (Stage 4)
+
+A single-broker [Apache Kafka 3.9](https://kafka.apache.org/) in **KRaft** mode (no ZooKeeper) ships in [`infra/docker-compose.dev.yml`](./infra/docker-compose.dev.yml). The full operator runbook is in [`infra/kafka/README.md`](./infra/kafka/README.md); broker rationale is [ADR-0001](./docs/adr/0001-use-kafka-for-job-events-and-worker-scaling.md).
+
+```bash
+cp .env.example .env        # if you haven't already
+pnpm db:up && pnpm db:migrate
+pnpm kafka:up               # start the broker
+pnpm kafka:topics           # converge topics from packages/kafka/src/topics.ts
+
+pnpm api:dev                # producer (terminal 1)
+pnpm worker:logger          # consumer stub (terminal 2)
+```
+
+Then create a job and watch the logger pick it up:
+
+```bash
+curl -s -X POST http://localhost:4000/v1/jobs \
+  -H 'content-type: application/json' \
+  -d '{ "type": "pdf.render", "payload": { "templateId": "invoice-v3" } }' | jq .
+```
+
+Topics are defined as code in [`packages/kafka/src/topics.ts`](./packages/kafka/src/topics.ts) and converged by `pnpm kafka:topics` (idempotent). Auto-creation is disabled on the broker so typos surface as connection errors. The shared client, env, and event schemas live in [`packages/kafka`](./packages/kafka).
+
+### Turning Kafka off
+
+Set `KAFKA_ENABLED=false` in `.env` to keep the Stage 1–3 dev loop usable without a broker:
+
+- The API logs a warning at startup and skips the producer; `POST /v1/jobs` still persists rows.
+- `pnpm worker:logger` and `pnpm kafka:topics` exit 0 with a notice.
+
+---
+
 ## Roadmap progress
 
-Stage progress is tracked in [`docs/roadmap.md`](./docs/roadmap.md). The current commit completes **Stage 3 — Job API (create + read)**.
+Stage progress is tracked in [`docs/roadmap.md`](./docs/roadmap.md). The current commit completes **Stage 4 — Kafka: topics, produce, consume skeleton**.

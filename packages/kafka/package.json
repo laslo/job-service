@@ -1,0 +1,24 @@
+{
+  "name": "@job-service/kafka",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Kafka client, topic registry, and event schemas shared by the API and workers.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./topics": "./src/topics.ts",
+    "./events": "./src/events/index.ts"
+  },
+  "scripts": {
+    "topics": "tsx --env-file-if-exists=../../.env scripts/provision-topics.ts",
+    "typecheck": "tsc -b --pretty"
+  },
+  "dependencies": {
+    "kafkajs": "^2.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "tsx": "^4.21.0"
+  }
+}
