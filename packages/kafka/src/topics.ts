@@ -45,6 +45,12 @@ export const TOPIC_SPECS: readonly TopicSpec[] = [
 export const ConsumerGroups = {
   /** Stage-4 stub: logs every message to stdout, commits offsets safely. */
   JobEventsLogger: "job-events-logger",
+  /**
+   * Stage-5 CPU-bound worker. Distinct group id from the logger so both
+   * processes receive the full message stream — kafkajs delivers each
+   * message to exactly one consumer per group.
+   */
+  CpuJobWorker: "cpu-job-worker",
 } as const;
 
 export type ConsumerGroupId = (typeof ConsumerGroups)[keyof typeof ConsumerGroups];

@@ -8,6 +8,13 @@
       "when": 1777236226213,
       "tag": "0000_initial_jobs",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777243687518,
+      "tag": "0001_jobs_error_column",
+      "breakpoints": true
     }
   ]
 }

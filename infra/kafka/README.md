@@ -25,9 +25,9 @@ The named volume `job-service-dev_kafka-data` keeps log segments across restarts
 
 The source of truth is [`packages/kafka/src/topics.ts`](../../packages/kafka/src/topics.ts). The current registry:
 
-| Topic          | Partitions | Replication | Retention | Producer           | Consumer (Stage 4)       |
-| -------------- | ---------- | ----------- | --------- | ------------------ | ------------------------ |
-| `jobs.created` | 3          | 1           | 7 days    | `apps/job-service` | `apps/job-events-logger` |
+| Topic          | Partitions | Replication | Retention | Producer           | Consumer groups                                                     |
+| -------------- | ---------- | ----------- | --------- | ------------------ | ------------------------------------------------------------------- |
+| `jobs.created` | 3          | 1           | 7 days    | `apps/job-service` | `job-events-logger` (logger), `cpu-job-worker` (CPU stub processor) |
 
 Auto-creation is **disabled** on the broker so typos surface as connection errors instead of silently spawning unconfigured single-partition topics. Add or change a topic by editing `topics.ts` and running `pnpm kafka:topics`.
 
@@ -36,7 +36,7 @@ Auto-creation is **disabled** on the broker so typos surface as connection error
 For Stage 1–3 dev loops where the broker is unnecessary, set `KAFKA_ENABLED=false` in `.env`:
 
 - The API logs a warning at startup and skips the producer; `POST /v1/jobs` still works against Postgres.
-- `pnpm worker:logger` exits 0 with a notice.
+- `pnpm worker:logger` and `pnpm worker:cpu` exit 0 with a notice.
 - `pnpm kafka:topics` exits 0 with a notice (safe to call from CI / pre-flight scripts).
 
 ## Operator helpers

@@ -39,6 +39,25 @@ importers:
         specifier: 4.1.5
         version: 4.1.5(@types/node@25.6.0)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.7)(tsx@4.21.0))
 
+  apps/cpu-job-worker:
+    dependencies:
+      '@job-service/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@job-service/kafka':
+        specifier: workspace:*
+        version: link:../../packages/kafka
+      drizzle-orm:
+        specifier: ^0.45.2
+        version: 0.45.2(postgres@3.4.9)
+    devDependencies:
+      '@types/node':
+        specifier: ^25.6.0
+        version: 25.6.0
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
+
   apps/job-events-logger:
     dependencies:
       '@job-service/kafka':

@@ -11,6 +11,7 @@ const sampleJob: JobDto = {
   type: "pdf.render",
   status: "pending",
   payload: { templateId: "invoice-v3" },
+  error: null,
   createdAt: "2026-04-26T20:31:11.000Z",
   updatedAt: "2026-04-26T20:31:11.000Z",
 };

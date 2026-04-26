@@ -1,0 +1,23 @@
+{
+  "name": "@job-service/cpu-job-worker",
+  "version": "0.0.0",
+  "private": true,
+  "description": "First worker — consumes jobs.created, runs a CPU-bound stub processor, and transitions jobs through running → completed/failed in Postgres (Stage 5).",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "tsx --env-file-if-exists=../../.env src/main.ts",
+    "dev": "tsx watch --env-file-if-exists=../../.env src/main.ts",
+    "typecheck": "tsc -b --pretty"
+  },
+  "dependencies": {
+    "@job-service/db": "workspace:*",
+    "@job-service/kafka": "workspace:*",
+    "drizzle-orm": "^0.45.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "tsx": "^4.21.0"
+  }
+}

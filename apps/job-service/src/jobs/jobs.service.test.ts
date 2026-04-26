@@ -14,6 +14,7 @@ function makeRow(overrides: Partial<JobRow> = {}): JobRow {
     type: "pdf.render",
     status: "pending",
     payload: { templateId: "invoice-v3" },
+    error: null,
     createdAt: now,
     updatedAt: now,
     ...overrides,
@@ -49,6 +50,7 @@ describe("JobsService.create", () => {
       type: row.type,
       status: "pending",
       payload: row.payload,
+      error: null,
       createdAt: "2026-04-26T20:31:11.000Z",
       updatedAt: "2026-04-26T20:31:11.000Z",
     });
@@ -126,5 +128,15 @@ describe("toDto", () => {
     const dto = toDto(makeRow());
     expect(dto.createdAt).toBe("2026-04-26T20:31:11.000Z");
     expect(dto.updatedAt).toBe("2026-04-26T20:31:11.000Z");
+  });
+
+  it("normalises a missing error column to null on the DTO", () => {
+    const row = makeRow({ error: null });
+    expect(toDto(row).error).toBeNull();
+  });
+
+  it("surfaces the persisted error string on failed rows", () => {
+    const row = makeRow({ status: "failed", error: "boom" });
+    expect(toDto(row)).toMatchObject({ status: "failed", error: "boom" });
   });
 });

@@ -16,6 +16,7 @@ const expectedDirs = [
   "apps",
   "apps/job-service",
   "apps/job-events-logger",
+  "apps/cpu-job-worker",
   "packages",
   "packages/db",
   "packages/kafka",
@@ -57,7 +58,7 @@ const lines = [
   ...layout.map((l) => `  ${l.ok ? "ok " : "MISS"} ${l.path}/`),
   ...files.map((f) => `  ${f.ok ? "ok " : "MISS"} ${f.path}`),
   "",
-  "Next: see docs/roadmap.md (Stage 5 — first worker).",
+  "Next: see docs/roadmap.md (Stage 6 — Next.js status UI).",
 ];
 
 process.stdout.write(lines.join("\n") + "\n");

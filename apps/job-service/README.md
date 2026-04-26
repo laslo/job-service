@@ -1,6 +1,6 @@
 # `@job-service/api`
 
-NestJS HTTP service that creates and reads jobs against the `@job-service/db` package and emits a `jobs.created` event to Kafka after each successful create. Stages 3–4 of [the roadmap](../../docs/roadmap.md); the controller surface is unchanged from Stage 3 — Kafka was added behind a feature flag (`KAFKA_ENABLED`).
+NestJS HTTP service that creates and reads jobs against the `@job-service/db` package and emits a `jobs.created` event to Kafka after each successful create. Stages 3–5 of [the roadmap](../../docs/roadmap.md); the controller surface is unchanged from Stage 3 — Kafka was added behind a feature flag (`KAFKA_ENABLED`) and Stage 5 hands the rest of the lifecycle (`running` → `completed` / `failed`, `error` field) off to [`apps/cpu-job-worker`](../cpu-job-worker/README.md).
 
 ---
 

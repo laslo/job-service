@@ -35,7 +35,8 @@ Choices are pinned by [ADR-0007](./docs/adr/0007-use-pnpm-workspaces-with-turbor
 .
 ├── apps/
 │   ├── job-service/               # NestJS HTTP API: create + read jobs (Stage 3)
-│   └── job-events-logger/         # Kafka consumer stub: logs jobs.* events (Stage 4)
+│   ├── job-events-logger/         # Kafka consumer stub: logs jobs.* events (Stage 4)
+│   └── cpu-job-worker/            # First worker: CPU-bound stub processor (Stage 5)
 ├── packages/
 │   ├── db/                        # PostgreSQL schema, Drizzle client, migrations (Stage 2)
 │   └── kafka/                     # kafkajs client, topic registry, event schemas (Stage 4)
@@ -106,6 +107,8 @@ It prints the active toolchain identity and verifies that the target folder layo
 | `pnpm api:openapi`       | Regenerate `apps/job-service/openapi.json` from controller decorators. |
 | `pnpm worker:logger`     | Run the standalone Kafka consumer stub (Stage 4).                      |
 | `pnpm worker:logger:dev` | Same, with `tsx watch` for the inner dev loop.                         |
+| `pnpm worker:cpu`        | Run the CPU-bound worker that completes jobs (Stage 5).                |
+| `pnpm worker:cpu:dev`    | Same, with `tsx watch` for the inner dev loop.                         |
 
 ---
 
@@ -184,10 +187,29 @@ Topics are defined as code in [`packages/kafka/src/topics.ts`](./packages/kafka/
 Set `KAFKA_ENABLED=false` in `.env` to keep the Stage 1–3 dev loop usable without a broker:
 
 - The API logs a warning at startup and skips the producer; `POST /v1/jobs` still persists rows.
-- `pnpm worker:logger` and `pnpm kafka:topics` exit 0 with a notice.
+- `pnpm worker:logger`, `pnpm worker:cpu`, and `pnpm kafka:topics` exit 0 with a notice.
+
+---
+
+## CPU worker (Stage 5)
+
+The first worker lives in [`apps/cpu-job-worker`](./apps/cpu-job-worker); see its [README](./apps/cpu-job-worker/README.md) for tunables, status semantics, and operational notes. End-to-end loop:
+
+```bash
+pnpm stack:up && pnpm db:migrate && pnpm kafka:topics
+pnpm api:dev                # producer (terminal 1)
+pnpm worker:cpu             # CPU worker (terminal 2)
+
+JOB_ID=$(curl -s -X POST http://localhost:4000/v1/jobs \
+  -H 'content-type: application/json' \
+  -d '{ "type": "pdf.render", "payload": { "templateId": "invoice-v3" } }' | jq -r .id)
+curl -s http://localhost:4000/v1/jobs/$JOB_ID | jq '{status, error, updatedAt}'
+```
+
+The job transitions `pending → running → completed` (or `failed` with a persisted `error` message) — polling-ready for the Stage-6 UI. Per-job CPU budget is governed by `JOB_CPU_TIMEOUT_MS`; see `.env.example` for the full set of knobs.
 
 ---
 
 ## Roadmap progress
 
-Stage progress is tracked in [`docs/roadmap.md`](./docs/roadmap.md). The current commit completes **Stage 4 — Kafka: topics, produce, consume skeleton**.
+Stage progress is tracked in [`docs/roadmap.md`](./docs/roadmap.md). The current commit completes **Stage 5 — first worker (CPU-bound stub processor)**.

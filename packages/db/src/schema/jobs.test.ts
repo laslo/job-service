@@ -10,11 +10,23 @@ describe("jobs schema", () => {
     expect([...jobStatus.enumValues]).toEqual([...jobStatusValues]);
   });
 
-  it("exposes the stage-2 columns expected by API and workers", () => {
+  it("exposes the columns expected by the API and workers", () => {
     const columns = Object.keys(jobs);
     expect(columns).toEqual(
-      expect.arrayContaining(["id", "type", "status", "payload", "createdAt", "updatedAt"]),
+      expect.arrayContaining([
+        "id",
+        "type",
+        "status",
+        "payload",
+        "error",
+        "createdAt",
+        "updatedAt",
+      ]),
     );
+  });
+
+  it("keeps the failure-detail column nullable so successful rows leave it empty", () => {
+    expect(jobs.error.notNull).toBe(false);
   });
 
   it("uses the canonical Postgres table name", () => {

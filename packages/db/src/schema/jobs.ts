@@ -20,6 +20,13 @@ export const jobs = pgTable(
     payload: jsonb("payload")
       .notNull()
       .default(sql`'{}'::jsonb`),
+    /**
+     * Failure detail recorded by workers when a job transitions to `failed`
+     * (Stage 5+). Kept nullable so successful and pending rows leave it empty.
+     * Truncated to a sensible size at the worker boundary; the column itself
+     * is unbounded to avoid a migration when error formats evolve.
+     */
+    error: text("error"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

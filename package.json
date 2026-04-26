@@ -35,7 +35,9 @@
     "api:dev": "pnpm --filter @job-service/api dev",
     "api:openapi": "pnpm --filter @job-service/api openapi:generate",
     "worker:logger": "pnpm --filter @job-service/job-events-logger start",
-    "worker:logger:dev": "pnpm --filter @job-service/job-events-logger dev"
+    "worker:logger:dev": "pnpm --filter @job-service/job-events-logger dev",
+    "worker:cpu": "pnpm --filter @job-service/cpu-job-worker start",
+    "worker:cpu:dev": "pnpm --filter @job-service/cpu-job-worker dev"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

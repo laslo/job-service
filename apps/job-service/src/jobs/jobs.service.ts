@@ -46,6 +46,7 @@ export function toDto(row: JobRow): JobDto {
     type: row.type,
     status: row.status,
     payload: (row.payload ?? {}) as Record<string, unknown>,
+    error: row.error ?? null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };

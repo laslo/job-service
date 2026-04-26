@@ -23,6 +23,15 @@ export class JobDto {
   })
   payload!: Record<string, unknown>;
 
+  @ApiProperty({
+    description:
+      "Failure detail recorded by the worker when status is `failed`. Null on pending, running, and completed rows. The field is always present in responses.",
+    example: "Job exceeded JOB_CPU_TIMEOUT_MS=30000",
+    nullable: true,
+    type: String,
+  })
+  error!: string | null;
+
   @ApiProperty({ format: "date-time", example: "2026-04-26T20:31:11.000Z" })
   createdAt!: string;
 

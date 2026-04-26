@@ -36,11 +36,11 @@ Use this file to track day-by-day progress. Locked stack: [reference/tech-stack.
 
 ## Stage 5 — First worker: CPU-bound path (e.g. PDF or stub processor)
 
-- [ ] Worker consumes from the correct topic and group id.
-- [ ] Worker transitions job status to `running` then `completed` or `failed` in Postgres.
-- [ ] Failure path persists error detail without losing the job row.
-- [ ] Resource limits / timeouts appropriate for CPU work are set for local runs.
-- [ ] End-to-end validation: create job → see terminal states via `GET` (polling-ready).
+- [x] Worker consumes from the correct topic and group id.
+- [x] Worker transitions job status to `running` then `completed` or `failed` in Postgres.
+- [x] Failure path persists error detail without losing the job row.
+- [x] Resource limits / timeouts appropriate for CPU work are set for local runs.
+- [x] End-to-end validation: create job → see terminal states via `GET` (polling-ready).
 
 ## Stage 6 — Next.js status UI (polling)
 

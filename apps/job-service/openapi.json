@@ -191,6 +191,12 @@
             "description": "Worker payload; arbitrary JSON object.",
             "additionalProperties": true
           },
+          "error": {
+            "type": "string",
+            "description": "Failure detail recorded by the worker when status is `failed`. Null on pending, running, and completed rows. The field is always present in responses.",
+            "example": "Job exceeded JOB_CPU_TIMEOUT_MS=30000",
+            "nullable": true
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -202,7 +208,7 @@
             "example": "2026-04-26T20:31:11.000Z"
           }
         },
-        "required": ["id", "type", "status", "payload", "createdAt", "updatedAt"]
+        "required": ["id", "type", "status", "payload", "error", "createdAt", "updatedAt"]
       },
       "ApiErrorDto": {
         "type": "object",
