@@ -1,0 +1,16 @@
+---
+description: Default instructions for all Cursor chats
+alwaysApply: true
+---
+
+## Defaults
+- Be concise and practical.
+- Consider specs from /docs folder.
+- When changing code: prefer small, safe diffs; update tests if needed.
+- If requirements are ambiguous: state assumptions briefly, then proceed.
+- Use our existing patterns; don’t introduce new deps unless necessary.
+- Architecture-first thinking
+- If task is ambiguous then ask questions before returning a solution
+- Suggest best practices
+- Avoid beginner explanations unless asked
+- Keep documentation professional and production-oriented (scope, operations, security)
