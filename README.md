@@ -33,7 +33,8 @@ Choices are pinned by [ADR-0007](./docs/adr/0007-use-pnpm-workspaces-with-turbor
 
 ```
 .
-├── apps/                          # deployable apps (frontend, api-gateway, services, workers) — added per roadmap stage
+├── apps/
+│   └── job-service/               # NestJS HTTP API: create + read jobs (Stage 3)
 ├── packages/
 │   └── db/                        # PostgreSQL schema, Drizzle client, migrations (Stage 2)
 ├── infra/
@@ -76,22 +77,25 @@ It prints the active toolchain identity and verifies that the target folder layo
 
 ## Common scripts
 
-| Command            | Purpose                                                               |
-| ------------------ | --------------------------------------------------------------------- |
-| `pnpm smoke`       | Print toolchain identity + verify layout.                             |
-| `pnpm lint`        | Run ESLint across the workspace.                                      |
-| `pnpm format`      | Check Prettier formatting.                                            |
-| `pnpm format:fix`  | Apply Prettier formatting.                                            |
-| `pnpm test`        | Run Vitest (passes with no tests).                                    |
-| `pnpm typecheck`   | Run TypeScript in build mode.                                         |
-| `pnpm build`       | Turborepo `build` task graph (no-op until apps land).                 |
-| `pnpm dev`         | Turborepo `dev` task graph (no-op until apps land).                   |
-| `pnpm db:up`       | Start Postgres via `infra/docker-compose.dev.yml` and wait on health. |
-| `pnpm db:down`     | Stop the local Postgres container (volume is preserved).              |
-| `pnpm db:generate` | Regenerate Drizzle migration SQL from `packages/db/src/schema`.       |
-| `pnpm db:migrate`  | Apply pending migrations to the database in `DATABASE_URL`.           |
-| `pnpm db:check`    | Insert a job row and read it back (Stage 2 sanity check).             |
-| `pnpm db:studio`   | Open Drizzle Studio against the configured database.                  |
+| Command            | Purpose                                                                |
+| ------------------ | ---------------------------------------------------------------------- |
+| `pnpm smoke`       | Print toolchain identity + verify layout.                              |
+| `pnpm lint`        | Run ESLint across the workspace.                                       |
+| `pnpm format`      | Check Prettier formatting.                                             |
+| `pnpm format:fix`  | Apply Prettier formatting.                                             |
+| `pnpm test`        | Run Vitest (passes with no tests).                                     |
+| `pnpm typecheck`   | Run TypeScript in build mode.                                          |
+| `pnpm build`       | Turborepo `build` task graph (no-op until apps land).                  |
+| `pnpm dev`         | Turborepo `dev` task graph (no-op until apps land).                    |
+| `pnpm db:up`       | Start Postgres via `infra/docker-compose.dev.yml` and wait on health.  |
+| `pnpm db:down`     | Stop the local Postgres container (volume is preserved).               |
+| `pnpm db:generate` | Regenerate Drizzle migration SQL from `packages/db/src/schema`.        |
+| `pnpm db:migrate`  | Apply pending migrations to the database in `DATABASE_URL`.            |
+| `pnpm db:check`    | Insert a job row and read it back (Stage 2 sanity check).              |
+| `pnpm db:studio`   | Open Drizzle Studio against the configured database.                   |
+| `pnpm api:start`   | Start the job service HTTP API (`apps/job-service`).                   |
+| `pnpm api:dev`     | Start the API with `--watch` for the inner dev loop.                   |
+| `pnpm api:openapi` | Regenerate `apps/job-service/openapi.json` from controller decorators. |
 
 ---
 
@@ -118,6 +122,29 @@ To regenerate migrations after schema changes in `packages/db/src/schema`, run `
 
 ---
 
+## Job service API (Stage 3)
+
+The HTTP API lives in [`apps/job-service`](./apps/job-service); see its [README](./apps/job-service/README.md) for the full surface, curl examples, and the OpenAPI artifact. Quick start:
+
+```bash
+cp .env.example .env        # if you haven't already
+pnpm db:up && pnpm db:migrate
+pnpm api:dev                # http://localhost:4000  (Swagger UI at /docs)
+```
+
+Create and fetch a job from the console:
+
+```bash
+JOB_ID=$(curl -s -X POST http://localhost:4000/v1/jobs \
+  -H 'content-type: application/json' \
+  -d '{ "type": "pdf.render", "payload": { "templateId": "invoice-v3" } }' | jq -r .id)
+curl -s http://localhost:4000/v1/jobs/$JOB_ID | jq .
+```
+
+Validation and not-found errors share the envelope documented in [`docs/reference/errors.md`](./docs/reference/errors.md).
+
+---
+
 ## Roadmap progress
 
-Stage progress is tracked in [`docs/roadmap.md`](./docs/roadmap.md). The current commit completes **Stage 2 — PostgreSQL and job model**.
+Stage progress is tracked in [`docs/roadmap.md`](./docs/roadmap.md). The current commit completes **Stage 3 — Job API (create + read)**.

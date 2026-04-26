@@ -34,6 +34,7 @@ More detail: [roadmap.md](./roadmap.md), [platform.md](./platform.md).
 | [reference/tech-stack.md](./reference/tech-stack.md) | Locked stack by area (data, backend, frontend, tooling, observability, auth) |
 | [reference/db.md](./reference/db.md) | PostgreSQL, ORM options, migrations, HTTP vs DB clients |
 | [reference/api-sdk.md](./reference/api-sdk.md) | OpenAPI, Orval, tRPC, and typed client strategy |
+| [reference/errors.md](./reference/errors.md) | HTTP error envelope and stable error codes |
 | [reference/i18n.md](./reference/i18n.md) | Locales, RSC-first i18n, library options |
 | [reference/auth.md](./reference/auth.md) | MVP token-based access; post-MVP OIDC / social login |
 

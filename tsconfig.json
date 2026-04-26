@@ -11,7 +11,10 @@
     "*.config.mjs",
     "packages/*/src/**/*",
     "packages/*/scripts/**/*",
-    "packages/*/drizzle.config.ts"
+    "packages/*/drizzle.config.ts",
+    "apps/*/src/**/*",
+    "apps/*/scripts/**/*",
+    "apps/*/test/**/*"
   ],
   "exclude": [
     "node_modules",

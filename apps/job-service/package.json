@@ -1,0 +1,36 @@
+{
+  "name": "@job-service/api",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Job service HTTP API: create + read jobs (Stage 3).",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "node --import @swc-node/register/esm-register --env-file-if-exists=../../.env src/main.ts",
+    "dev": "node --watch --import @swc-node/register/esm-register --env-file-if-exists=../../.env src/main.ts",
+    "openapi:generate": "node --import @swc-node/register/esm-register --env-file-if-exists=../../.env scripts/generate-openapi.ts",
+    "typecheck": "tsc -b --pretty"
+  },
+  "dependencies": {
+    "@job-service/db": "workspace:*",
+    "@nestjs/common": "^11.1.19",
+    "@nestjs/core": "^11.1.19",
+    "@nestjs/platform-express": "^11.1.19",
+    "@nestjs/swagger": "^11.4.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "drizzle-orm": "^0.45.2",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "^11.1.19",
+    "@swc-node/register": "^1.11.1",
+    "@swc/core": "^1.15.30",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.6.0",
+    "@types/supertest": "^7.2.0",
+    "supertest": "^7.2.2"
+  }
+}

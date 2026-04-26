@@ -25,7 +25,10 @@
     "db:generate": "pnpm --filter @job-service/db generate",
     "db:migrate": "pnpm --filter @job-service/db migrate",
     "db:check": "pnpm --filter @job-service/db check",
-    "db:studio": "pnpm --filter @job-service/db studio"
+    "db:studio": "pnpm --filter @job-service/db studio",
+    "api:start": "pnpm --filter @job-service/api start",
+    "api:dev": "pnpm --filter @job-service/api dev",
+    "api:openapi": "pnpm --filter @job-service/api openapi:generate"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

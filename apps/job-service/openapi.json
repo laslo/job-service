@@ -1,0 +1,241 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/healthz": {
+      "get": {
+        "operationId": "liveness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Liveness probe",
+        "tags": ["health"]
+      }
+    },
+    "/readyz": {
+      "get": {
+        "description": "Returns 200 once the database accepts queries; 503 otherwise.",
+        "operationId": "readiness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "503": {
+            "description": ""
+          }
+        },
+        "summary": "Readiness probe",
+        "tags": ["health"]
+      }
+    },
+    "/v1/jobs": {
+      "post": {
+        "description": "Inserts a job row in `pending` state and returns the persisted record.",
+        "operationId": "createJob",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateJobDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Job created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a new job",
+        "tags": ["jobs"]
+      }
+    },
+    "/v1/jobs/{id}": {
+      "get": {
+        "description": "Returns the current persisted state, including status and payload.",
+        "operationId": "getJobById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`id` is not a valid UUID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Fetch a job by id",
+        "tags": ["jobs"]
+      }
+    }
+  },
+  "info": {
+    "title": "Job Service API",
+    "description": "Create and fetch background jobs.",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "jobs",
+      "description": ""
+    },
+    {
+      "name": "health",
+      "description": ""
+    }
+  ],
+  "servers": [
+    {
+      "url": "http://localhost:4000"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "CreateJobDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Job type identifier; routes the job to the matching worker class in later stages.",
+            "example": "pdf.render",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "payload": {
+            "type": "object",
+            "description": "Arbitrary JSON object passed to the worker.",
+            "additionalProperties": true,
+            "example": {
+              "templateId": "invoice-v3",
+              "invoiceId": "8f00b0d4-1f6f-4a56-9b51-2b6cba1bb2e7"
+            }
+          }
+        },
+        "required": ["type"]
+      },
+      "JobDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "6f1c5b6a-4f8a-4a0d-9f1d-2a72b3a4f01b"
+          },
+          "type": {
+            "type": "string",
+            "example": "pdf.render",
+            "maxLength": 100
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "running", "completed", "failed"],
+            "example": "pending"
+          },
+          "payload": {
+            "type": "object",
+            "description": "Worker payload; arbitrary JSON object.",
+            "additionalProperties": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-04-26T20:31:11.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-04-26T20:31:11.000Z"
+          }
+        },
+        "required": ["id", "type", "status", "payload", "createdAt", "updatedAt"]
+      },
+      "ApiErrorDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 400,
+            "description": "HTTP status code (mirrors the response status)."
+          },
+          "error": {
+            "type": "string",
+            "example": "validation_error",
+            "description": "Stable, machine-readable error code; safe for clients to switch on."
+          },
+          "message": {
+            "type": "string",
+            "example": "Request validation failed",
+            "description": "Human-readable summary; not localized."
+          },
+          "details": {
+            "type": "object",
+            "description": "Optional structured details (validation issues, conflict info, etc.).",
+            "example": [
+              {
+                "path": "type",
+                "constraint": "isString",
+                "message": "type must be a string"
+              }
+            ]
+          }
+        },
+        "required": ["statusCode", "error", "message"]
+      }
+    }
+  }
+}

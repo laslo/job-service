@@ -18,6 +18,7 @@ Start at **[Overview.md](./Overview.md)** for purpose, priorities, and the full 
 | **Locked tech choices** (hub) | [reference/tech-stack.md](./reference/tech-stack.md) |
 | PostgreSQL, ORM, HTTP vs DB “SDK” | [reference/db.md](./reference/db.md) |
 | OpenAPI, Orval, client strategy | [reference/api-sdk.md](./reference/api-sdk.md) |
+| HTTP error envelope and codes | [reference/errors.md](./reference/errors.md) |
 | Locales, RSC, libraries | [reference/i18n.md](./reference/i18n.md) |
 | MVP token auth, post-MVP IdPs | [reference/auth.md](./reference/auth.md) |
 

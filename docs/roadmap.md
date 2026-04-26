@@ -21,10 +21,10 @@ Use this file to track day-by-day progress. Locked stack: [reference/tech-stack.
 
 ## Stage 3 — Job API (create + read, no Kafka yet if you need an even thinner slice)
 
-- [ ] `POST` (or equivalent) creates a job row in `pending` (or similar) state.
-- [ ] `GET` by id returns job payload including status.
-- [ ] Validation errors return stable, documented shapes for UI and curl.
-- [ ] Same API testable from **browser** (Swagger/Playground or minimal UI) and **console** (curl/httpie).
+- [x] `POST` (or equivalent) creates a job row in `pending` (or similar) state.
+- [x] `GET` by id returns job payload including status.
+- [x] Validation errors return stable, documented shapes for UI and curl.
+- [x] Same API testable from **browser** (Swagger/Playground or minimal UI) and **console** (curl/httpie).
 
 ## Stage 4 — Kafka: topics, produce, consume skeleton
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Smoke command: prints toolchain identity and the target repo layout.
 // One command a contributor runs to confirm the dev loop works after onboarding
-// or a major branch switch. Layout grows with the roadmap (currently Stage 2).
+// or a major branch switch. Layout grows with the roadmap (currently Stage 3).
 
 import { readFileSync, existsSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -14,6 +14,7 @@ const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 
 const expectedDirs = [
   "apps",
+  "apps/job-service",
   "packages",
   "packages/db",
   "infra",
@@ -23,7 +24,11 @@ const expectedDirs = [
   "docs",
 ];
 
-const expectedFiles = [".env.example", "infra/docker-compose.dev.yml"];
+const expectedFiles = [
+  ".env.example",
+  "infra/docker-compose.dev.yml",
+  "apps/job-service/openapi.json",
+];
 
 const layout = expectedDirs.map((rel) => {
   const abs = join(root, rel);
@@ -48,7 +53,7 @@ const lines = [
   ...layout.map((l) => `  ${l.ok ? "ok " : "MISS"} ${l.path}/`),
   ...files.map((f) => `  ${f.ok ? "ok " : "MISS"} ${f.path}`),
   "",
-  "Next: see docs/roadmap.md (Stage 3 — Job API).",
+  "Next: see docs/roadmap.md (Stage 4 — Kafka).",
 ];
 
 process.stdout.write(lines.join("\n") + "\n");

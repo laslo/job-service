@@ -79,6 +79,7 @@ How **Next.js** apps call **NestJS** services in this monorepo, how **types and 
 
 - **CI:** fail if OpenAPI spec is stale relative to controllers (generate + `git diff`).
 - **Versioning:** prefix routes (`/v1/...`) when the first external client appears.
+- **Error contract:** every endpoint returns the envelope documented in [`errors.md`](./errors.md); error codes are stable and additive.
 
 ---
 
