@@ -24,6 +24,7 @@ export interface TopicSpec {
 
 export const Topics = {
   JobsCreated: "jobs.created",
+  JobsIo: "jobs.io",
 } as const;
 
 export type TopicName = (typeof Topics)[keyof typeof Topics];
@@ -40,6 +41,15 @@ export const TOPIC_SPECS: readonly TopicSpec[] = [
       "cleanup.policy": "delete",
     },
   },
+  {
+    name: Topics.JobsIo,
+    partitions: 3,
+    replicationFactor: 1,
+    configEntries: {
+      "retention.ms": String(7 * 24 * 60 * 60 * 1000),
+      "cleanup.policy": "delete",
+    },
+  },
 ];
 
 export const ConsumerGroups = {
@@ -51,6 +61,8 @@ export const ConsumerGroups = {
    * message to exactly one consumer per group.
    */
   CpuJobWorker: "cpu-job-worker",
+  /** Stage-8 I/O worker (email/external calls). */
+  IoJobWorker: "io-job-worker",
 } as const;
 
 export type ConsumerGroupId = (typeof ConsumerGroups)[keyof typeof ConsumerGroups];

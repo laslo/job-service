@@ -83,6 +83,15 @@ services:
       retries: 40
       start_period: 30s
 
+  # Stage 8: local SMTP sink + web UI for verifying outbound email.
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: job-service-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
 volumes:
   postgres-data:
   kafka-data:

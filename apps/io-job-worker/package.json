@@ -1,0 +1,26 @@
+{
+  "name": "@job-service/io-job-worker",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Second worker — consumes jobs.io, performs I/O-bound work (email via Mailhog), and transitions jobs through running → completed/failed (Stage 8).",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "tsx --env-file-if-exists=../../.env src/main.ts",
+    "dev": "tsx watch --env-file-if-exists=../../.env src/main.ts",
+    "typecheck": "tsc -b --pretty"
+  },
+  "dependencies": {
+    "@job-service/db": "workspace:*",
+    "@job-service/kafka": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "nodemailer": "^7.0.7"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/nodemailer": "^6.4.19",
+    "tsx": "^4.21.0"
+  }
+}
+

@@ -59,10 +59,10 @@ Use this file to track day-by-day progress. Locked stack: [reference/tech-stack.
 
 ## Stage 8 — Second worker: I/O-bound (e.g. email or external API)
 
-- [ ] New topic and consumer group (or clear partition strategy) for I/O jobs.
-- [ ] Retries and idempotency strategy documented and partially implemented.
-- [ ] Secrets for outbound calls live in env / secret store, not in repo.
-- [ ] UI or API can trigger this job type distinctly from Stage 5.
+- [x] New topic and consumer group (or clear partition strategy) for I/O jobs.
+- [x] Retries and idempotency strategy documented and partially implemented.
+- [x] Secrets for outbound calls live in env / secret store, not in repo.
+- [x] UI or API can trigger this job type distinctly from Stage 5.
 
 ## Stage 9 — Third worker: batch / analytics
 

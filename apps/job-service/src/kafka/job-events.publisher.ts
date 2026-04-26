@@ -3,6 +3,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import {
   encodeJobCreated,
   JOB_CREATED_SCHEMA_VERSION,
+  Topics,
   type JobCreatedEvent,
 } from "@job-service/kafka";
 
@@ -59,5 +60,19 @@ export class JobEventsPublisher {
         },
       ],
     });
+
+    // Stage 8+: route I/O-bound jobs to a dedicated topic for isolation.
+    if (job.type.startsWith("email.")) {
+      await this.kafka.getProducer().send({
+        topic: Topics.JobsIo,
+        messages: [
+          {
+            key: encoded.key,
+            value: encoded.value,
+            headers: encoded.headers,
+          },
+        ],
+      });
+    }
   }
 }
