@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Stage-1 smoke command: prints toolchain identity and target layout.
-// Intended as the single command a contributor runs to confirm the dev loop works.
+// Smoke command: prints toolchain identity and the target repo layout.
+// One command a contributor runs to confirm the dev loop works after onboarding
+// or a major branch switch. Layout grows with the roadmap (currently Stage 2).
 
 import { readFileSync, existsSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -14,6 +15,7 @@ const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const expectedDirs = [
   "apps",
   "packages",
+  "packages/db",
   "infra",
   "infra/kubernetes",
   "infra/helm",
@@ -21,14 +23,22 @@ const expectedDirs = [
   "docs",
 ];
 
+const expectedFiles = [".env.example", "infra/docker-compose.dev.yml"];
+
 const layout = expectedDirs.map((rel) => {
   const abs = join(root, rel);
   const ok = existsSync(abs) && statSync(abs).isDirectory();
-  return { path: rel, ok };
+  return { kind: "dir", path: rel, ok };
+});
+
+const files = expectedFiles.map((rel) => {
+  const abs = join(root, rel);
+  const ok = existsSync(abs) && statSync(abs).isFile();
+  return { kind: "file", path: rel, ok };
 });
 
 const lines = [
-  `${pkg.name}@${pkg.version} — Stage 1 smoke`,
+  `${pkg.name}@${pkg.version} — smoke`,
   "",
   "Toolchain (locked):",
   `  node           ${process.version}  (engines: ${pkg.engines?.node ?? "n/a"})`,
@@ -36,16 +46,16 @@ const lines = [
   "",
   "Target layout:",
   ...layout.map((l) => `  ${l.ok ? "ok " : "MISS"} ${l.path}/`),
+  ...files.map((f) => `  ${f.ok ? "ok " : "MISS"} ${f.path}`),
   "",
-  "Next: see docs/roadmap.md (Stage 2 — PostgreSQL and job model).",
+  "Next: see docs/roadmap.md (Stage 3 — Job API).",
 ];
 
 process.stdout.write(lines.join("\n") + "\n");
 
-const missing = layout.filter((l) => !l.ok);
+const missing = [...layout, ...files].filter((l) => !l.ok);
 if (missing.length > 0) {
-  process.stderr.write(
-    `\nMissing ${missing.length} expected director${missing.length === 1 ? "y" : "ies"}.\n`,
-  );
+  const noun = missing.length === 1 ? "entry" : "entries";
+  process.stderr.write(`\nMissing ${missing.length} expected ${noun}.\n`);
   process.exit(1);
 }

@@ -14,10 +14,10 @@ Use this file to track day-by-day progress. Locked stack: [reference/tech-stack.
 
 ## Stage 2 — PostgreSQL and job model
 
-- [ ] PostgreSQL runs locally via compose, script, or documented one-liner.
-- [ ] Migrations (or equivalent) create a `jobs` table with status and timestamps.
-- [ ] Job row can be inserted and fetched with a minimal script or temporary route.
-- [ ] Connection config is env-driven with a checked-in `.env.example` (no secrets).
+- [x] PostgreSQL runs locally via compose, script, or documented one-liner.
+- [x] Migrations (or equivalent) create a `jobs` table with status and timestamps.
+- [x] Job row can be inserted and fetched with a minimal script or temporary route.
+- [x] Connection config is env-driven with a checked-in `.env.example` (no secrets).
 
 ## Stage 3 — Job API (create + read, no Kafka yet if you need an even thinner slice)
 

@@ -19,7 +19,13 @@
     "format:fix": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -b --pretty"
+    "typecheck": "tsc -b --pretty",
+    "db:up": "docker compose -f infra/docker-compose.dev.yml --project-directory . up -d --wait postgres",
+    "db:down": "docker compose -f infra/docker-compose.dev.yml --project-directory . down",
+    "db:generate": "pnpm --filter @job-service/db generate",
+    "db:migrate": "pnpm --filter @job-service/db migrate",
+    "db:check": "pnpm --filter @job-service/db check",
+    "db:studio": "pnpm --filter @job-service/db studio"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

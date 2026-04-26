@@ -1,0 +1,29 @@
+{
+  "name": "@job-service/db",
+  "version": "0.0.0",
+  "private": true,
+  "description": "PostgreSQL schema, Drizzle client, and migrations for the job-service platform.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts",
+    "./client": "./src/client.ts"
+  },
+  "scripts": {
+    "generate": "drizzle-kit generate",
+    "migrate": "tsx --env-file-if-exists=../../.env scripts/migrate.ts",
+    "check": "tsx --env-file-if-exists=../../.env scripts/check.ts",
+    "studio": "drizzle-kit studio",
+    "typecheck": "tsc -b --pretty"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2",
+    "postgres": "^3.4.9"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.21.0"
+  }
+}

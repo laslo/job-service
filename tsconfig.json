@@ -5,6 +5,21 @@
     "allowJs": true,
     "checkJs": false
   },
-  "include": ["scripts/**/*", "*.config.ts", "*.config.mjs"],
-  "exclude": ["node_modules", "dist", ".turbo", ".next"]
+  "include": [
+    "scripts/**/*",
+    "*.config.ts",
+    "*.config.mjs",
+    "packages/*/src/**/*",
+    "packages/*/scripts/**/*",
+    "packages/*/drizzle.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/node_modules/**",
+    "dist",
+    "**/dist/**",
+    ".turbo",
+    ".next",
+    "**/drizzle/**"
+  ]
 }

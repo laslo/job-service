@@ -33,9 +33,11 @@ Choices are pinned by [ADR-0007](./docs/adr/0007-use-pnpm-workspaces-with-turbor
 
 ```
 .
-├── apps/         # deployable apps (frontend, api-gateway, services, workers) — added per roadmap stage
-├── packages/     # shared TypeScript packages (types, config, clients) — added as cross-cutting needs emerge
+├── apps/                          # deployable apps (frontend, api-gateway, services, workers) — added per roadmap stage
+├── packages/
+│   └── db/                        # PostgreSQL schema, Drizzle client, migrations (Stage 2)
 ├── infra/
+│   ├── docker-compose.dev.yml     # local dev stack (Postgres now; Kafka in Stage 4)
 │   ├── kubernetes/
 │   ├── helm/
 │   └── observability/
@@ -74,16 +76,39 @@ It prints the active toolchain identity and verifies that the target folder layo
 
 ## Common scripts
 
-| Command           | Purpose                                               |
-| ----------------- | ----------------------------------------------------- |
-| `pnpm smoke`      | Print toolchain identity + verify layout.             |
-| `pnpm lint`       | Run ESLint across the workspace.                      |
-| `pnpm format`     | Check Prettier formatting.                            |
-| `pnpm format:fix` | Apply Prettier formatting.                            |
-| `pnpm test`       | Run Vitest (passes with no tests).                    |
-| `pnpm typecheck`  | Run TypeScript in build mode.                         |
-| `pnpm build`      | Turborepo `build` task graph (no-op until apps land). |
-| `pnpm dev`        | Turborepo `dev` task graph (no-op until apps land).   |
+| Command            | Purpose                                                               |
+| ------------------ | --------------------------------------------------------------------- |
+| `pnpm smoke`       | Print toolchain identity + verify layout.                             |
+| `pnpm lint`        | Run ESLint across the workspace.                                      |
+| `pnpm format`      | Check Prettier formatting.                                            |
+| `pnpm format:fix`  | Apply Prettier formatting.                                            |
+| `pnpm test`        | Run Vitest (passes with no tests).                                    |
+| `pnpm typecheck`   | Run TypeScript in build mode.                                         |
+| `pnpm build`       | Turborepo `build` task graph (no-op until apps land).                 |
+| `pnpm dev`         | Turborepo `dev` task graph (no-op until apps land).                   |
+| `pnpm db:up`       | Start Postgres via `infra/docker-compose.dev.yml` and wait on health. |
+| `pnpm db:down`     | Stop the local Postgres container (volume is preserved).              |
+| `pnpm db:generate` | Regenerate Drizzle migration SQL from `packages/db/src/schema`.       |
+| `pnpm db:migrate`  | Apply pending migrations to the database in `DATABASE_URL`.           |
+| `pnpm db:check`    | Insert a job row and read it back (Stage 2 sanity check).             |
+| `pnpm db:studio`   | Open Drizzle Studio against the configured database.                  |
+
+---
+
+## Database (Stage 2)
+
+The platform targets **PostgreSQL** end-to-end (see [ADR-0003](./docs/adr/0003-adopt-drizzle-as-default-postgresql-orm.md)). The schema, client, and migrations live in [`packages/db`](./packages/db); local Postgres is provided by [`infra/docker-compose.dev.yml`](./infra/docker-compose.dev.yml).
+
+```bash
+cp .env.example .env
+pnpm db:up
+pnpm db:migrate
+pnpm db:check
+```
+
+`db:check` inserts a `jobs` row and reads it back — confirming connectivity, the schema, and default columns (id, status, timestamps). Connection config is taken from `DATABASE_URL`; `.env` is gitignored and only `.env.example` is committed.
+
+To regenerate migrations after schema changes in `packages/db/src/schema`, run `pnpm db:generate` and commit the new files in `packages/db/drizzle/`. Tear the database down with `pnpm db:down` (the named volume keeps your data; remove it manually with `docker volume rm job-service-dev_postgres-data` if you need a clean slate).
 
 ---
 
@@ -95,4 +120,4 @@ It prints the active toolchain identity and verifies that the target folder layo
 
 ## Roadmap progress
 
-Stage progress is tracked in [`docs/roadmap.md`](./docs/roadmap.md). This commit completes **Stage 1 — Repository and the tightest dev loop**.
+Stage progress is tracked in [`docs/roadmap.md`](./docs/roadmap.md). The current commit completes **Stage 2 — PostgreSQL and job model**.
