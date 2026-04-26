@@ -1,0 +1,36 @@
+{
+  "name": "job-service",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Job service monorepo: Next.js UI, NestJS API gateway, services, and Kafka workers.",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">=22 <23",
+    "pnpm": ">=10 <11"
+  },
+  "scripts": {
+    "smoke": "node scripts/smoke.mjs",
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b --pretty"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "25.6.0",
+    "eslint": "10.2.1",
+    "eslint-config-prettier": "10.1.8",
+    "globals": "17.5.0",
+    "prettier": "3.8.3",
+    "turbo": "2.9.6",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.59.0",
+    "vitest": "4.1.5"
+  }
+}

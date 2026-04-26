@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Default (job-service)",
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "useUnknownInCatchVariables": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "incremental": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  }
+}

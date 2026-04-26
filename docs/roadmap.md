@@ -6,11 +6,11 @@ Use this file to track day-by-day progress. Locked stack: [reference/tech-stack.
 
 ## Stage 1 — Repository and the tightest dev loop
 
-- [ ] Repo layout matches target structure (apps, packages, infra folders as planned).
-- [ ] Root README documents how to install deps and one “smoke” command (even if it only prints help).
-- [ ] Single shared toolchain locked (Node version, package manager) and recorded for reproducibility.
-- [ ] Lint/format/test scripts exist at root and run clean on an empty scaffold.
-- [ ] Optional: pre-commit or CI stub runs those scripts on push.
+- [x] Repo layout matches target structure (apps, packages, infra folders as planned).
+- [x] Root README documents how to install deps and one “smoke” command (even if it only prints help).
+- [x] Single shared toolchain locked (Node version, package manager) and recorded for reproducibility.
+- [x] Lint/format/test scripts exist at root and run clean on an empty scaffold.
+- [x] Optional: pre-commit or CI stub runs those scripts on push.
 
 ## Stage 2 — PostgreSQL and job model
 
