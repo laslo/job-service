@@ -44,10 +44,10 @@ Use this file to track day-by-day progress. Locked stack: [reference/tech-stack.
 
 ## Stage 6 — Next.js status UI (polling)
 
-- [ ] Next.js app lists jobs or shows detail for one id from the API.
-- [ ] Polling interval is configurable; avoids hammering the API in dev.
-- [ ] Empty and error states are usable when API or DB is down.
-- [ ] Same flows still reproducible with curl without opening the UI.
+- [x] Next.js app lists jobs or shows detail for one id from the API.
+- [x] Polling interval is configurable; avoids hammering the API in dev.
+- [x] Empty and error states are usable when API or DB is down.
+- [x] Same flows still reproducible with curl without opening the UI.
 
 ## Stage 7 — API gateway, auth, access quotas
 
