@@ -11,6 +11,7 @@ function makeRow(overrides: Partial<JobRow> = {}): JobRow {
   const now = new Date("2026-04-26T20:31:11.000Z");
   return {
     id: "6f1c5b6a-4f8a-4a0d-9f1d-2a72b3a4f01b",
+    principalId: "principal-1",
     type: "pdf.render",
     status: "pending",
     payload: { templateId: "invoice-v3" },
@@ -24,7 +25,8 @@ function makeRow(overrides: Partial<JobRow> = {}): JobRow {
 function makeRepo(): JobsRepository {
   return {
     create: vi.fn(),
-    findById: vi.fn(),
+    findByIdForPrincipal: vi.fn(),
+    countActiveByPrincipal: vi.fn().mockResolvedValue(0),
   } as unknown as JobsRepository;
 }
 
@@ -42,9 +44,13 @@ describe("JobsService.create", () => {
     vi.mocked(repo.create).mockResolvedValueOnce(row);
 
     const service = new JobsService(repo, events);
-    const result = await service.create({ type: "pdf.render", payload: { a: 1 } });
+    const result = await service.create("principal-1", { type: "pdf.render", payload: { a: 1 } });
 
-    expect(repo.create).toHaveBeenCalledWith({ type: "pdf.render", payload: { a: 1 } });
+    expect(repo.create).toHaveBeenCalledWith({
+      principalId: "principal-1",
+      type: "pdf.render",
+      payload: { a: 1 },
+    });
     expect(result).toEqual({
       id: row.id,
       type: row.type,
@@ -63,7 +69,7 @@ describe("JobsService.create", () => {
     vi.mocked(repo.create).mockResolvedValueOnce(row);
 
     const service = new JobsService(repo, events);
-    const result = await service.create({ type: "pdf.render" });
+    const result = await service.create("principal-1", { type: "pdf.render" });
 
     expect(events.publishJobCreated).toHaveBeenCalledTimes(1);
     expect(events.publishJobCreated).toHaveBeenCalledWith(result);
@@ -76,7 +82,9 @@ describe("JobsService.create", () => {
     vi.mocked(events.publishJobCreated).mockRejectedValueOnce(new Error("broker down"));
 
     const service = new JobsService(repo, events);
-    await expect(service.create({ type: "pdf.render" })).rejects.toThrow("broker down");
+    await expect(service.create("principal-1", { type: "pdf.render" })).rejects.toThrow(
+      "broker down",
+    );
   });
 
   it("defaults a missing payload to an empty object before persisting", async () => {
@@ -85,9 +93,13 @@ describe("JobsService.create", () => {
     vi.mocked(repo.create).mockResolvedValueOnce(makeRow({ payload: {} }));
 
     const service = new JobsService(repo, events);
-    await service.create({ type: "pdf.render" });
+    await service.create("principal-1", { type: "pdf.render" });
 
-    expect(repo.create).toHaveBeenCalledWith({ type: "pdf.render", payload: {} });
+    expect(repo.create).toHaveBeenCalledWith({
+      principalId: "principal-1",
+      type: "pdf.render",
+      payload: {},
+    });
   });
 });
 
@@ -96,10 +108,10 @@ describe("JobsService.findById", () => {
     const repo = makeRepo();
     const events = makeEvents();
     const row = makeRow({ status: "running" });
-    vi.mocked(repo.findById).mockResolvedValueOnce(row);
+    vi.mocked(repo.findByIdForPrincipal).mockResolvedValueOnce(row);
 
     const service = new JobsService(repo, events);
-    const result = await service.findById(row.id);
+    const result = await service.findById("principal-1", row.id);
 
     expect(result.status).toBe("running");
     expect(result.id).toBe(row.id);
@@ -108,10 +120,10 @@ describe("JobsService.findById", () => {
   it("throws a NotFoundException with the documented error code", async () => {
     const repo = makeRepo();
     const events = makeEvents();
-    vi.mocked(repo.findById).mockResolvedValueOnce(null);
+    vi.mocked(repo.findByIdForPrincipal).mockResolvedValueOnce(null);
 
     const service = new JobsService(repo, events);
-    await expect(service.findById("missing-id")).rejects.toMatchObject({
+    await expect(service.findById("principal-1", "missing-id")).rejects.toMatchObject({
       constructor: NotFoundException,
       response: { error: "job_not_found" },
     });

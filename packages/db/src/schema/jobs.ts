@@ -15,6 +15,7 @@ export const jobs = pgTable(
   "jobs",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    principalId: text("principal_id").notNull().default("anonymous"),
     type: text("type").notNull(),
     status: jobStatus("status").notNull().default("pending"),
     payload: jsonb("payload")

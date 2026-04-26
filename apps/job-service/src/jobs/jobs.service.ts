@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 
 import type { JobRow } from "@job-service/db";
 
@@ -15,8 +15,20 @@ export class JobsService {
     private readonly events: JobEventsPublisher,
   ) {}
 
-  async create(input: CreateJobDto): Promise<JobDto> {
+  async create(principalId: string, input: CreateJobDto): Promise<JobDto> {
+    const active = await this.repository.countActiveByPrincipal(principalId);
+    if (active >= 10) {
+      throw new HttpException(
+        {
+          error: ApiErrorCode.RateLimited,
+          message: `Quota exceeded: principal ${principalId} has ${active} active jobs (limit: 10)`,
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
     const row = await this.repository.create({
+      principalId,
       type: input.type,
       payload: input.payload ?? {},
     });
@@ -28,8 +40,8 @@ export class JobsService {
     return dto;
   }
 
-  async findById(id: string): Promise<JobDto> {
-    const row = await this.repository.findById(id);
+  async findById(principalId: string, id: string): Promise<JobDto> {
+    const row = await this.repository.findByIdForPrincipal(principalId, id);
     if (!row) {
       throw new NotFoundException({
         error: ApiErrorCode.JobNotFound,

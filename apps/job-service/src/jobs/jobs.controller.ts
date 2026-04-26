@@ -7,9 +7,12 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  UseGuards,
 } from "@nestjs/common";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
+import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
+import { PrincipalId } from "../auth/principal.decorator.js";
 import { CreateJobDto } from "./dto/create-job.dto.js";
 import { ApiErrorDto } from "./dto/error.dto.js";
 import { JobDto } from "./dto/job.dto.js";
@@ -17,6 +20,8 @@ import { JobsService } from "./jobs.service.js";
 
 @ApiTags("jobs")
 @Controller("jobs")
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth("jwt")
 export class JobsController {
   constructor(private readonly service: JobsService) {}
 
@@ -29,8 +34,8 @@ export class JobsController {
   })
   @ApiResponse({ status: 201, type: JobDto, description: "Job created" })
   @ApiResponse({ status: 400, type: ApiErrorDto, description: "Validation error" })
-  create(@Body() body: CreateJobDto): Promise<JobDto> {
-    return this.service.create(body);
+  create(@PrincipalId() principalId: string, @Body() body: CreateJobDto): Promise<JobDto> {
+    return this.service.create(principalId, body);
   }
 
   @Get(":id")
@@ -42,7 +47,10 @@ export class JobsController {
   @ApiResponse({ status: 200, type: JobDto })
   @ApiResponse({ status: 400, type: ApiErrorDto, description: "`id` is not a valid UUID" })
   @ApiResponse({ status: 404, type: ApiErrorDto, description: "Job not found" })
-  findById(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string): Promise<JobDto> {
-    return this.service.findById(id);
+  findById(
+    @PrincipalId() principalId: string,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+  ): Promise<JobDto> {
+    return this.service.findById(principalId, id);
   }
 }

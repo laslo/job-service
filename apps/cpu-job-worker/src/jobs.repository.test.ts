@@ -14,6 +14,7 @@ function makeRow(overrides: Partial<JobRow> = {}): JobRow {
   const now = new Date("2026-04-26T20:31:11.000Z");
   return {
     id: "6f1c5b6a-4f8a-4a0d-9f1d-2a72b3a4f01b",
+    principalId: "principal-1",
     type: "pdf.render",
     status: "running",
     payload: {},

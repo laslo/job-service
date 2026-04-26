@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 
 import { jobs, type JobRow, type NewJobRow } from "@job-service/db";
 
@@ -25,8 +25,21 @@ export class JobsRepository {
     return row;
   }
 
-  async findById(id: string): Promise<JobRow | null> {
-    const [row] = await this.db.client.db.select().from(jobs).where(eq(jobs.id, id)).limit(1);
+  async findByIdForPrincipal(principalId: string, id: string): Promise<JobRow | null> {
+    const [row] = await this.db.client.db
+      .select()
+      .from(jobs)
+      .where(and(eq(jobs.id, id), eq(jobs.principalId, principalId)))
+      .limit(1);
     return row ?? null;
+  }
+
+  async countActiveByPrincipal(principalId: string): Promise<number> {
+    const [row] = await this.db.client.db
+      .select({ count: sql<number>`count(*)` })
+      .from(jobs)
+      .where(and(eq(jobs.principalId, principalId), inArray(jobs.status, ["pending", "running"])))
+      .limit(1);
+    return Number(row?.count ?? 0);
   }
 }

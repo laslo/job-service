@@ -68,6 +68,11 @@
             }
           }
         },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
         "summary": "Create a new job",
         "tags": ["jobs"]
       }
@@ -118,6 +123,11 @@
             }
           }
         },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
         "summary": "Fetch a job by id",
         "tags": ["jobs"]
       }

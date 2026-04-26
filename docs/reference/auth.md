@@ -8,9 +8,20 @@ Aligned with [`architecture.md`](../architecture.md) and roadmap Stage 7 in [`ro
 
 - **No Google / OIDC / social login** on the MVP critical path.
 - **Restricted MVP access** (~5 principals), **10 jobs** per principal by default; enforcement is **server-side** (gateway and/or job service), not UI-only.
-- **Preferred mechanism:** short-lived or rotatable **API tokens** (bearer or header) plus **coarse rate limits** and quotas. Sessions are optional if everything stays first-party and cookie setup remains simple.
+- **Mechanism (Stage 7):** **JWT (HS256)** sent as `Authorization: Bearer <token>`. The JWT `sub` is treated as the **principal id**.
+  - Secret: `JOB_API_JWT_SECRET` (env).
+  - No refresh tokens for MVP; rotate secrets/tokens manually.
+  - Server enforces **quota (10 active jobs)** and a coarse **rate limit** on create-job.
 
 This keeps integration small while the product proves job flows.
+
+### Local token minting
+
+For local development you can mint a compatible HS256 token with a `sub` claim:
+
+```bash
+node -e "import { SignJWT } from 'jose'; import { createSecretKey } from 'node:crypto'; const secret=process.env.JOB_API_JWT_SECRET; if(!secret) throw new Error('missing JOB_API_JWT_SECRET'); const key=createSecretKey(Buffer.from(secret,'utf8')); const jwt=await new SignJWT({}).setProtectedHeader({ alg:'HS256' }).setSubject('principal-1').setIssuedAt().setExpirationTime('7d').sign(key); console.log(jwt);"
+```
 
 ---
 

@@ -4,11 +4,15 @@ function apiBaseUrl(): string {
   return process.env.JOB_API_BASE_URL?.trim() || "http://localhost:4000";
 }
 
-export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }): Promise<Response> {
+export async function GET(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> },
+): Promise<Response> {
   const { id } = await ctx.params;
+  const authorization = req.headers.get("authorization") ?? undefined;
   const res = await fetch(`${apiBaseUrl()}/v1/jobs/${encodeURIComponent(id)}`, {
     method: "GET",
-    headers: { accept: "application/json" },
+    headers: { accept: "application/json", ...(authorization ? { authorization } : {}) },
     cache: "no-store",
   });
 
@@ -17,4 +21,3 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     headers: { "content-type": res.headers.get("content-type") ?? "application/json" },
   });
 }
-

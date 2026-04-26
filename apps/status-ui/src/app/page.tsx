@@ -25,6 +25,7 @@ export default function Page() {
   const [payloadText, setPayloadText] = useState('{"example":true}');
   const [jobId, setJobId] = useState("");
   const [pollMs, setPollMs] = useState(1500);
+  const [token, setToken] = useState("");
 
   const [lastJob, setLastJob] = useState<JobDto | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
@@ -50,7 +51,10 @@ export default function Page() {
 
       const res = await fetch("/api/jobs", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          ...(token.trim() ? { authorization: `Bearer ${token.trim()}` } : {}),
+        },
         body: JSON.stringify({ type: type.trim(), payload: parsed.value }),
       });
 
@@ -72,7 +76,10 @@ export default function Page() {
   async function fetchJob(id: string) {
     setLastError(null);
     try {
-      const res = await fetch(`/api/jobs/${encodeURIComponent(id)}`, { cache: "no-store" });
+      const res = await fetch(`/api/jobs/${encodeURIComponent(id)}`, {
+        cache: "no-store",
+        headers: token.trim() ? { authorization: `Bearer ${token.trim()}` } : undefined,
+      });
       const text = await res.text();
       if (!res.ok) {
         setLastError(text);
@@ -128,8 +135,23 @@ export default function Page() {
         <div className="card" style={{ display: "grid", gap: 12 }}>
           <div style={{ display: "grid", gap: 8 }}>
             <label>
+              <span className="label">
+                Auth token (JWT) — optional in stage 6, required in stage 7+
+              </span>
+              <input
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                placeholder="paste JWT here (without 'Bearer ')"
+                spellCheck={false}
+              />
+            </label>
+            <label>
               <span className="label">Job type</span>
-              <input value={type} onChange={(e) => setType(e.target.value)} placeholder="pdf.render" />
+              <input
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                placeholder="pdf.render"
+              />
             </label>
             <label>
               <span className="label">Payload (JSON object)</span>
@@ -219,7 +241,9 @@ export default function Page() {
       </section>
 
       <section className="card" style={{ display: "grid", gap: 8 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+        <div
+          style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}
+        >
           <div>
             <div style={{ fontWeight: 600 }}>Console reproduction</div>
             <div className="muted">Same flow without opening the UI.</div>
@@ -230,4 +254,3 @@ export default function Page() {
     </main>
   );
 }
-

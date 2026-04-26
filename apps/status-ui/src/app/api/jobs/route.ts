@@ -6,9 +6,10 @@ function apiBaseUrl(): string {
 
 export async function POST(req: Request): Promise<Response> {
   const body = await req.text();
+  const authorization = req.headers.get("authorization") ?? undefined;
   const res = await fetch(`${apiBaseUrl()}/v1/jobs`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...(authorization ? { authorization } : {}) },
     body,
   });
 
@@ -17,4 +18,3 @@ export async function POST(req: Request): Promise<Response> {
     headers: { "content-type": res.headers.get("content-type") ?? "application/json" },
   });
 }
-

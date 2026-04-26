@@ -51,11 +51,11 @@ Use this file to track day-by-day progress. Locked stack: [reference/tech-stack.
 
 ## Stage 7 — API gateway, auth, access quotas
 
-- [ ] Gateway routes traffic to job service behind a single public origin in dev.
-- [ ] Authentication mechanism chosen (e.g. JWT, session, or opaque API token) is documented.
-- [ ] Server-side cap: **10 jobs** per principal (or token) with clear 403/429 response.
-- [ ] Rate limits or coarse abuse protection on create-job path (minimal viable).
-- [ ] Optional notification service remains **disabled** unless this stage explicitly needs it.
+- [x] Gateway routes traffic to job service behind a single public origin in dev.
+- [x] Authentication mechanism chosen (e.g. JWT, session, or opaque API token) is documented.
+- [x] Server-side cap: **10 jobs** per principal (or token) with clear 403/429 response.
+- [x] Rate limits or coarse abuse protection on create-job path (minimal viable).
+- [x] Optional notification service remains **disabled** unless this stage explicitly needs it.
 
 ## Stage 8 — Second worker: I/O-bound (e.g. email or external API)
 

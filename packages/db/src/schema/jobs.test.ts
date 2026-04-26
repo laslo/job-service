@@ -15,6 +15,7 @@ describe("jobs schema", () => {
     expect(columns).toEqual(
       expect.arrayContaining([
         "id",
+        "principalId",
         "type",
         "status",
         "payload",

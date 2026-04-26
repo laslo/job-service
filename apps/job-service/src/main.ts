@@ -30,6 +30,15 @@ async function bootstrap(): Promise<void> {
     .setDescription("Create and fetch background jobs.")
     .setVersion("0.1.0")
     .addServer(`http://localhost:${env.port}`)
+    .addBearerAuth(
+      {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+        description: "JWT (HS256). The `sub` claim is treated as the principal id.",
+      },
+      "jwt",
+    )
     .addTag("jobs")
     .addTag("health")
     .build();
